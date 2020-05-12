@@ -1,0 +1,21 @@
+version: '2'
+
+services:
+  portainer:
+    image: portainer/portainer
+    command: -H unix:///var/run/docker.sock
+    restart: always
+    ports:
+      - 9000:9000 # https port
+      - 8000:8000 # http  port
+    volumes:
+      # create certs like this: openssl req -new -x509 -sha256 -key ./certs/portainer.key -out ./certs/portainer.crt -days 3650
+      - ./certs:/certs
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    command:
+      --ssl
+      --sslcert /certs/portainer.crt
+      --sslkey /certs/portainer.key
+volumes:
+  portainer_data:

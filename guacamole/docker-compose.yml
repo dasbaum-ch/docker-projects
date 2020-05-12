@@ -1,0 +1,49 @@
+version: '3.1'
+services:
+  db: # important! Init the DB with this documentation: https://guacamole.apache.org/doc/gug/guacamole-docker.html
+    container_name: postgres_container
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: secret! # please use a strong password!
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+      - ./backup/:/var/lib/backup/
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: user@example.com # use a usefull username
+      PGADMIN_DEFAULT_PASSWORD: secret! # please use a strong password!
+    volumes:
+       - pgadmin:/root/.pgadmin
+       - pgadmin:/var/lib/pgadmin
+    ports:
+      - "81:80"
+    restart: unless-stopped
+  guacd:
+    restart: always
+    container_name: guacd
+    image: guacamole/guacd
+  guacamole:
+    container_name: guacamole
+    depends_on:
+    - guacd
+    - db
+    image: guacamole/guacamole
+    volumes:
+      - ./guacamole_homedir:/opt/guacamole_homedir
+    environment:
+      GUACD_HOSTNAME: guacd
+      POSTGRES_DATABASE: guacamole_db # # change to correct DB
+      POSTGRES_HOSTNAME: db
+      POSTGRES_USER: guacamole_user # change to correct DB user
+      POSTGRES_PASSWORD: secret! # please use a strong password!
+      GUACAMOLE_HOME: /opt/guacamole_homedir
+    ports:
+      - "8080:8080"
+
+volumes:
+    postgres:
+    pgadmin:
